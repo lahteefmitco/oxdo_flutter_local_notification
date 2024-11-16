@@ -1,9 +1,10 @@
-import 'dart:math';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:oxdo_flutter_local_notification/main.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,7 +14,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   // To show the progress notification
   Future<void> showProgressNotification(int progress, int maxProgress) async {
     final AndroidNotificationDetails androidNotificationDetails =
@@ -62,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
       importance: Importance.max,
       priority: Priority.high,
       showWhen: false,
+      // styleInformation: BigPictureStyleInformation(bigPicture)
     );
 
     const NotificationDetails platformChannelSpecifics =
@@ -71,6 +72,52 @@ class _HomeScreenState extends State<HomeScreen> {
       0, // notification id.
       'Test Notification',
       'This is the body of the notification',
+      platformChannelSpecifics,
+      payload: 'Notification Payload',
+    );
+  }
+
+  Future _showImageNotification({
+    required String title,
+    required String body,
+    required String? image,
+  }) async {
+
+    // image url to display 
+    const  imageUrl =
+        "https://img-mm.manoramaonline.com/content/dam/mm/mo/news/just-in/images/2024/11/16/bhothathankettu-kseb-1.jpg?w=1120&h=583";
+
+    final response = await http.get(Uri.parse(imageUrl));
+    final directory = Directory.systemTemp;
+    final filePath = '${directory.path}/remote_image.jpg';
+    final file = File(filePath);
+    await file.writeAsBytes(response.bodyBytes);
+
+    final BigPictureStyleInformation bigPictureStyleInformation =
+        BigPictureStyleInformation(
+      FilePathAndroidBitmap(filePath),
+      largeIcon: FilePathAndroidBitmap(filePath),
+      contentTitle: title,
+      summaryText: body,
+    );
+
+    AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'image_channel_id',
+      'image channel',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: true,
+      styleInformation: bigPictureStyleInformation,
+    );
+
+    NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      2, // notification id.
+      title,
+      body,
       platformChannelSpecifics,
       payload: 'Notification Payload',
     );
@@ -94,7 +141,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   // requesting notificaton permission on run time
                   await Permission.notification.request();
                 }
-                await _simulateDownload();
+                // show image notification
+                await _showImageNotification(
+                    title: "Sample title",
+                    body: "Sample body",
+                    image:
+                        "https://img-mm.manoramaonline.com/content/dam/mm/mo/news/just-in/images/2024/11/16/bhothathankettu-kseb-1.jpg?w=1120&h=583");
               },
               child: const Text("Show Progress Notification"),
             ),
