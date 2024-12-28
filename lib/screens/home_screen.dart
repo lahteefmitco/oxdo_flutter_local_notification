@@ -109,6 +109,9 @@ class _HomeScreenState extends State<HomeScreen> {
       priority: Priority.high,
       showWhen: true,
       styleInformation: bigPictureStyleInformation,
+      actions: [
+        AndroidNotificationAction("id", "See")
+      ]
     );
 
     NotificationDetails platformChannelSpecifics =

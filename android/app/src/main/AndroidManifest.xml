@@ -46,4 +46,6 @@ add this to post notification for for android devices above Android 13 -->
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+  
+
 </manifest>
